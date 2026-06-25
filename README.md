@@ -82,11 +82,29 @@ A reusable module for creating AWS EC2 instances with configurable parameters.
 - `key_name` - Name of the AWS key pair for SSH access
 - `instance_name` - Name tag for the EC2 instance
 
+### S3 Bucket Module (`modules/s3_bucket`)
+
+A reusable module for creating AWS S3 buckets with security best practices.
+
+**Features:**
+- Configurable bucket name (must be globally unique)
+- Versioning support
+- Public access blocking
+- Environment tagging
+- Modular design for easy reuse
+
+**Parameters:**
+- `region` - AWS region where the bucket will be created
+- `bucket_name` - Name of the S3 bucket (must be globally unique)
+- `environment` - Environment tag for the bucket (default: dev)
+- `versioning_enabled` - Enable versioning on the S3 bucket (default: true)
+- `block_public_access` - Block all public access to the S3 bucket (default: true)
+
 *More modules will be added in the future for other AWS resources.*
 
 ## Quick Start
 
-### Using the EC2 Instances Module
+### Using Multiple Modules
 
 1. Create a new directory for your project:
 ```bash
@@ -94,9 +112,10 @@ mkdir my-terraform-project
 cd my-terraform-project
 ```
 
-2. Copy the module:
+2. Copy the modules:
 ```bash
 cp -r /path/to/terraform-aws-modules/modules/ec2_instances ./modules/
+cp -r /path/to/terraform-aws-modules/modules/s3_bucket ./modules/
 ```
 
 3. Create your `main.tf`:
@@ -135,6 +154,29 @@ variable "instance_name" {
   type        = string
 }
 
+variable "s3_bucket_name" {
+  description = "Name of the S3 bucket (must be globally unique)"
+  type        = string
+}
+
+variable "s3_environment" {
+  description = "Environment tag for the S3 bucket"
+  type        = string
+  default     = "dev"
+}
+
+variable "s3_versioning_enabled" {
+  description = "Enable versioning on the S3 bucket"
+  type        = bool
+  default     = true
+}
+
+variable "s3_block_public_access" {
+  description = "Block all public access to the S3 bucket"
+  type        = bool
+  default     = true
+}
+
 module "ec2_instance" {
   source = "./modules/ec2_instances"
 
@@ -145,19 +187,44 @@ module "ec2_instance" {
   instance_name = var.instance_name
 }
 
-output "instance_id" {
+module "s3_bucket" {
+  source = "./modules/s3_bucket"
+
+  region               = var.region
+  bucket_name          = var.s3_bucket_name
+  environment          = var.s3_environment
+  versioning_enabled   = var.s3_versioning_enabled
+  block_public_access  = var.s3_block_public_access
+}
+
+output "ec2_instance_id" {
   description = "ID of the EC2 instance"
   value       = module.ec2_instance.instance_id
 }
 
-output "instance_public_ip" {
+output "ec2_instance_public_ip" {
   description = "Public IP address of the EC2 instance"
   value       = module.ec2_instance.instance_public_ip
 }
 
-output "ssh_command" {
-  description = "SSH command to connect to the instance"
+output "ec2_ssh_command" {
+  description = "SSH command to connect to the EC2 instance"
   value       = module.ec2_instance.ssh_command
+}
+
+output "s3_bucket_id" {
+  description = "ID of the S3 bucket"
+  value       = module.s3_bucket.bucket_id
+}
+
+output "s3_bucket_arn" {
+  description = "ARN of the S3 bucket"
+  value       = module.s3_bucket.bucket_arn
+}
+
+output "s3_bucket_name" {
+  description = "Name of the S3 bucket"
+  value       = module.s3_bucket.bucket_name
 }
 ```
 
@@ -168,11 +235,18 @@ cp terraform.tfvars.example terraform.tfvars
 
 Edit `terraform.tfvars` with your actual values:
 ```hcl
+# EC2 Instance Variables
 region        = "eu-north-1"
 ami           = "ami-0aba19e56f3eaec05"
 instance_type = "t3.micro"
 key_name      = "my-key-pair"
 instance_name = "My-Instance"
+
+# S3 Bucket Variables
+s3_bucket_name          = "my-unique-bucket-name-12345"
+s3_environment          = "dev"
+s3_versioning_enabled   = true
+s3_block_public_access  = true
 ```
 
 5. Initialize Terraform:
@@ -195,11 +269,15 @@ terraform apply
 ```
 terraform-aws-modules/
 ├── modules/
-│   └── ec2_instances/
+│   ├── ec2_instances/
+│   │   ├── main.tf           # Main resource configuration
+│   │   ├── variables.tf      # Input variables
+│   │   ├── outputs.tf        # Output values
+│   │   └── terraform.tfvars # Default variable values
+│   └── s3_bucket/
 │       ├── main.tf           # Main resource configuration
 │       ├── variables.tf      # Input variables
-│       ├── outputs.tf        # Output values
-│       └── terraform.tfvars # Default variable values
+│       └── outputs.tf        # Output values
 ├── main.tf                   # Example usage with variables
 ├── terraform.tfvars.example  # Example variable values (copy this to terraform.tfvars)
 ├── terraform.tfvars          # Your actual values (gitignored - not committed)
@@ -225,6 +303,23 @@ A helper script `run_terraform.sh` is provided for convenience:
 # View plan
 ./run_terraform.sh plan
 ```
+
+### Targeting Specific Modules
+
+If you want to create or update only a specific module without affecting others, you can use the `-target` flag:
+
+```bash
+# Create only the S3 bucket
+terraform apply -target=module.s3_bucket
+
+# Create only the EC2 instance
+terraform apply -target=module.ec2_instance
+
+# Destroy only the S3 bucket
+terraform destroy -target=module.s3_bucket
+```
+
+**Note:** Using `-target` is not recommended for regular use as it can create inconsistent state. For better isolation, consider creating separate main.tf files or directories for different modules.
 
 ### Customizing Parameters
 
