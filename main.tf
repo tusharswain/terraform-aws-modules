@@ -104,3 +104,15 @@ output "s3_bucket_name" {
   description = "Name of the S3 bucket"
   value       = module.s3_bucket.bucket_name
 }
+
+# DynamoDB Table for State Locking
+resource "aws_dynamodb_table" "terraform_lock" {
+  name           = "terraform-lock"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "LockID"
+
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+}
