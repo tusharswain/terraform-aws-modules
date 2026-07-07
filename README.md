@@ -278,30 +278,68 @@ terraform-aws-modules/
 │       ├── main.tf           # Main resource configuration
 │       ├── variables.tf      # Input variables
 │       └── outputs.tf        # Output values
-├── main.tf                   # Example usage with variables
-├── terraform.tfvars.example  # Example variable values (copy this to terraform.tfvars)
-├── terraform.tfvars          # Your actual values (gitignored - not committed)
+├── default/                  # Standard configuration (no workspaces)
+│   ├── main.tf               # Example usage with variables
+│   ├── backend.tf            # S3 backend configuration
+│   └── terraform.tfvars.example # Example variable values
+├── workspace/                # Workspace-based configuration
+│   ├── main.tf               # Example usage with workspace-aware instance types
+│   ├── backend.tf            # S3 backend configuration
+│   └── terraform.tfvars.example # Example variable values
 ├── run_terraform.sh          # Helper script for Terraform commands
 ├── requirements.txt          # Python dependencies
 ├── .gitignore               # Git ignore rules
 └── README.md                # This file
 ```
 
+## Available Configurations
+
+This repository provides two example configurations in separate directories because Terraform cannot have two `main.tf` files in the same folder.
+
+### `default/` Directory
+
+This is the standard configuration where you pass a single `instance_type` value directly. Use this when you do not need Terraform workspaces.
+
+```bash
+cd default
+cp terraform.tfvars.example terraform.tfvars
+# Edit terraform.tfvars with your values
+terraform init
+terraform apply
+```
+
+### `workspace/` Directory
+
+This configuration uses Terraform workspaces to select different `instance_type` values for `dev`, `stage`, and `prod` environments. The `instance_type` variable is a map and the active workspace decides which value is used.
+
+```bash
+cd workspace
+cp terraform.tfvars.example terraform.tfvars
+# Edit terraform.tfvars with your values
+terraform init
+terraform workspace new dev
+terraform workspace new stage
+terraform workspace new prod
+terraform workspace select dev
+terraform apply
+```
+
 ## Usage
 
 ### Using the Helper Script
 
-A helper script `run_terraform.sh` is provided for convenience:
+A helper script `run_terraform.sh` is provided for convenience. Copy it into the directory you want to use, then run it from there:
 
 ```bash
-# Apply infrastructure
+# For standard configuration
+cd default
+cp ../run_terraform.sh .
 ./run_terraform.sh apply
 
-# Destroy infrastructure
-./run_terraform.sh destroy
-
-# View plan
-./run_terraform.sh plan
+# For workspace-based configuration
+cd workspace
+cp ../run_terraform.sh .
+./run_terraform.sh apply
 ```
 
 ### Targeting Specific Modules

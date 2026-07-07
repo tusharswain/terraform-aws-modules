@@ -2,7 +2,7 @@
 terraform {
   backend "s3" {
     bucket         = "my-unique-example-bucket-trs" # change this
-    key            = "trswain/terraform.tfstate"
+    key            = "trswain/workspace/terraform.tfstate"
     region         = "eu-north-1"
     encrypt        = true
     use_lockfile   = true
