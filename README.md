@@ -281,12 +281,13 @@ terraform-aws-modules/
 ├── default/                  # Standard configuration (no workspaces)
 │   ├── main.tf               # Example usage with variables
 │   ├── backend.tf            # S3 backend configuration
+│   ├── run_terraform.sh      # Helper script for Terraform commands
 │   └── terraform.tfvars.example # Example variable values
 ├── workspace/                # Workspace-based configuration
 │   ├── main.tf               # Example usage with workspace-aware instance types
 │   ├── backend.tf            # S3 backend configuration
+│   ├── run_terraform.sh      # Helper script for Terraform commands
 │   └── terraform.tfvars.example # Example variable values
-├── run_terraform.sh          # Helper script for Terraform commands
 ├── requirements.txt          # Python dependencies
 ├── .gitignore               # Git ignore rules
 └── README.md                # This file
@@ -328,17 +329,15 @@ terraform apply
 
 ### Using the Helper Script
 
-A helper script `run_terraform.sh` is provided for convenience. Copy it into the directory you want to use, then run it from there:
+A helper script `run_terraform.sh` is included in both `default/` and `workspace/` directories. Run it from the directory you want to use:
 
 ```bash
 # For standard configuration
 cd default
-cp ../run_terraform.sh .
 ./run_terraform.sh apply
 
 # For workspace-based configuration
 cd workspace
-cp ../run_terraform.sh .
 ./run_terraform.sh apply
 ```
 

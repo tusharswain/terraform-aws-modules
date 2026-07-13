@@ -77,11 +77,11 @@ module "ec2_instance" {
 module "s3_bucket" {
   source = "../modules/s3_bucket"
 
-  region               = var.region
-  bucket_name          = var.s3_bucket_name
-  environment          = var.s3_environment
-  versioning_enabled   = var.s3_versioning_enabled
-  block_public_access  = var.s3_block_public_access
+  region              = var.region
+  bucket_name         = var.s3_bucket_name
+  environment         = var.s3_environment
+  versioning_enabled  = var.s3_versioning_enabled
+  block_public_access = var.s3_block_public_access
 }
 
 output "ec2_instance_id" {
@@ -116,9 +116,9 @@ output "s3_bucket_name" {
 
 # DynamoDB Table for State Locking
 resource "aws_dynamodb_table" "terraform_lock" {
-  name           = "terraform-lock-workspace"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "LockID"
+  name         = "terraform-lock-workspace"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "LockID"
 
   attribute {
     name = "LockID"
